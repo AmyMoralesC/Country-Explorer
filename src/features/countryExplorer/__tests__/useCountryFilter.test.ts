@@ -1,6 +1,4 @@
 /**
- * useCountryFilter.test.ts
- *
  * Tests for the filtering hook.
  * We test the LOGIC, not the React internals — so renderHook is enough.
  * No DOM rendering needed here.
@@ -43,20 +41,19 @@ describe("useCountryFilter", () => {
     expect(result.current[0]?.commonName).toBe("Nicaragua");
   });
 
-  it("filters by capital city", () => {
+  it("does NOT match on capital city (name-only search)", () => {
+    // only the country name and code are searched.
     const { result } = renderHook(() =>
       useCountryFilter({ countries: mockCountries, query: "tokyo" })
     );
-    expect(result.current).toHaveLength(1);
-    expect(result.current[0]?.cca3).toBe("JPN");
+    expect(result.current).toHaveLength(0);
   });
 
-  it("filters by region", () => {
+  it("does NOT match on region (name-only search)", () => {
     const { result } = renderHook(() =>
       useCountryFilter({ countries: mockCountries, query: "asia" })
     );
-    expect(result.current).toHaveLength(1);
-    expect(result.current[0]?.cca3).toBe("JPN");
+    expect(result.current).toHaveLength(0);
   });
 
   it("returns empty array when no countries match", () => {

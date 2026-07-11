@@ -1,8 +1,6 @@
 "use client";
 
 /**
- * CountryExplorer.tsx
- *
  * Root layout component for the feature.
  * Responsibilities:
  *   - Fetch country data via useCountries (TanStack Query)
@@ -14,6 +12,7 @@
  * All rendering logic lives in child components.
  */
 
+import { useEffect } from "react";
 import { useCountries } from "../hooks/useCountries";
 import { useCountryFilter } from "../hooks/useCountryFilter";
 import { useCountryStore } from "../store/countryStore";
@@ -34,6 +33,23 @@ export function CountryExplorer() {
   const handleCountrySelect = (country: Country) => {
     setSelectedCountry(country);
   };
+
+  // Keep the selection in sync with the search: if the person types a query
+  // that no longer includes the currently selected country, clear the
+  // selection. This avoids the confusing state of a red-highlighted country
+  // on the map that doesn't match what's in the search box. If the selected
+  // country IS still among the matches (or the search is empty), we leave
+  // it selected — searching "co" while Mexico is selected should keep Mexico.
+
+  useEffect(() => {
+    if (!selectedCountry) return;
+    if (searchQuery.trim().length === 0) return;
+
+    const stillMatches = filteredCountries.some((c) => c.cca3 === selectedCountry.cca3);
+    if (!stillMatches) {
+      setSelectedCountry(null);
+    }
+  }, [searchQuery, filteredCountries, selectedCountry, setSelectedCountry]);
 
   return (
     <div className="flex flex-col h-screen bg-ui-bg">
@@ -58,13 +74,12 @@ export function CountryExplorer() {
 
       {/* ── Main content ────────────────────────────────────────── */}
       <main className="flex flex-1 gap-4 p-4 min-h-0">
-        {/* Left column: search + map */}
         <div className="flex flex-col flex-1 min-w-0 gap-3">
           {/* Search bar */}
           {isLoading ? (
             <SearchBarSkeleton />
           ) : (
-            <SearchBar countries={countries} />
+            <SearchBar countries={countries} filteredCountries={filteredCountries} />
           )}
 
           {/* Map */}
@@ -73,15 +88,15 @@ export function CountryExplorer() {
             {isError && <MapError />}
             {!isLoading && !isError && (
               <WorldMap
-                countries={filteredCountries}
+                countries={countries}
+                visibleCountries={filteredCountries}
+                isSearchActive={searchQuery.trim().length > 0}
                 selectedCountry={selectedCountry}
                 onCountryClick={handleCountrySelect}
               />
             )}
           </div>
         </div>
-
-        {/* Right column: info panel — fixed width, doesn't shrink */}
         <aside className="w-80 shrink-0 min-h-0">
           {selectedCountry ? (
             <CountryCard
