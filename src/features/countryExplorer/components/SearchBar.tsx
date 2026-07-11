@@ -4,23 +4,23 @@
  * SearchBar.tsx
  *
  * Controlled search input connected to Zustand store.
- * The "Random" button selects a random country from the full list
- * and sets it as the selected country in global state.
+ * - Typing filters the map in real time (grays out non-matches — see WorldMap).
+ * - Pressing Enter selects the first country that matches the current query.
+ * - The "Random" button selects a random country from the full list.
  *
- * Accessibility:
- * - Input has an associated <label> (visually hidden via sr-only).
- * - The random button has an aria-label describing its action.
- * - Search icon is decorative (aria-hidden).
  */
 
 import type { Country } from "../types/country.types";
 import { useCountryStore } from "../store/countryStore";
 
 interface SearchBarProps {
+  /** Full country list — used by the "Random" button. */
   countries: Country[];
+  /** Countries matching the current search query — used by Enter-to-select. */
+  filteredCountries: Country[];
 }
 
-export function SearchBar({ countries }: SearchBarProps) {
+export function SearchBar({ countries, filteredCountries }: SearchBarProps) {
   const searchQuery = useCountryStore((s) => s.searchQuery);
   const setSearchQuery = useCountryStore((s) => s.setSearchQuery);
   const setSelectedCountry = useCountryStore((s) => s.setSelectedCountry);
@@ -33,6 +33,16 @@ export function SearchBar({ countries }: SearchBarProps) {
       setSelectedCountry(randomCountry);
       // Clear search so the user sees the full map, not a filtered view.
       setSearchQuery("");
+    }
+  };
+
+  // Enter selects the top match from the current filtered results.
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== "Enter") return;
+
+    const topMatch = filteredCountries[0];
+    if (topMatch) {
+      setSelectedCountry(topMatch);
     }
   };
 
@@ -58,9 +68,10 @@ export function SearchBar({ countries }: SearchBarProps) {
         <input
           id="country-search"
           type="text"
-          placeholder="Search by name, capital, or region…"
+          placeholder="Search by name, capital, or region… (Enter to select)"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
           className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-ui-border bg-ui-surface text-ui-text-primary placeholder:text-ui-text-muted text-sm shadow-card focus:outline-none focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent transition-all"
         />
 
