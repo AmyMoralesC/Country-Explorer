@@ -1,27 +1,42 @@
 /**
- * projection.ts
- *
  * Converts geographic coordinates (latitude/longitude) to SVG pixel positions.
  *
  * We use the Equirectangular (Plate Carrée) projection — the simplest possible:
  * it maps longitude linearly to X and latitude linearly to Y.
- * It distorts area near the poles, but it matches the Natural Earth 110m
- * GeoJSON dataset we're using, so paths and country dots align correctly.
+ * It distorts area near the poles, but it matches the Natural Earth GeoJSON
+ * dataset we're using, so paths and country dots align correctly.
  *
- * The SVG viewBox is 1000 × 507 — chosen to match Natural Earth's aspect ratio.
+ * Vertical layout: Antarctica's coastline reaches the true South Pole
+ * (latitude -90), so a plain linear mapping puts it flush against the
+ * bottom edge automatically — which is what we want. The northernmost
+ * landmass (Greenland, ~83.6°N) falls well short of the North Pole (90°N),
+ * so the same linear mapping leaves only a sliver of ocean at the top
+ * (about 3.5% of the map height), which reads as "cramped" rather than
+ * as deliberate framing. TOP_PADDING adds a fixed band of extra canvas
+ * height above the projection, giving the Arctic some breathing room
+ * without touching the equirectangular math or shifting Antarctica.
  */
 
 export const MAP_WIDTH = 1000;
-export const MAP_HEIGHT = 507;
+
+// Height of the actual equirectangular projection (lat -90..90 → 0..MAP_BASE_HEIGHT).
+const MAP_BASE_HEIGHT = 505;
+
+// Extra ocean band reserved above the projection — purely cosmetic framing.
+const TOP_PADDING = 28;
+
+// Total SVG canvas height (what the viewBox and background actually use).
+export const MAP_HEIGHT = MAP_BASE_HEIGHT + TOP_PADDING;
 
 /**
  * Projects a [lat, lng] pair to SVG [x, y] coordinates.
- * Latitude range:  +90 (top) to -90 (bottom)  → Y: 0 to MAP_HEIGHT
- * Longitude range: -180 (left) to +180 (right) → X: 0 to MAP_WIDTH
+ * Latitude range:  +90 (top of projection) to -90 (bottom, flush with
+ *   MAP_HEIGHT since Antarctica reaches the pole) → Y: TOP_PADDING..MAP_HEIGHT
+ * Longitude range: -180 (left) to +180 (right) → X: 0..MAP_WIDTH
  */
 export function project(lat: number, lng: number): [number, number] {
   const x = ((lng + 180) / 360) * MAP_WIDTH;
-  const y = ((90 - lat) / 180) * MAP_HEIGHT;
+  const y = TOP_PADDING + ((90 - lat) / 180) * MAP_BASE_HEIGHT;
   return [x, y];
 }
 

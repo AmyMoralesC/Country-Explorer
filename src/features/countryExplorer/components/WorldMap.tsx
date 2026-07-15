@@ -141,7 +141,7 @@ export function WorldMap({
             const admCode = feature.properties.ADM0_A3 as string;
             const isSelected = selectedCountry?.cca3 === admCode;
 
-            // A country is "dimmed" when a search is active AND it's not
+            // A country is "dimmed" when a search is active and it's not
             // among the current matches. The selected country always stays
             // visually prominent, even if it wouldn't currently match — this
             // avoids a jarring flash if a user clears/edits the search after
@@ -160,7 +160,11 @@ export function WorldMap({
               <path
                 key={`${admCode}-${index}`}
                 d={geometryToPath(feature.geometry)}
-                className={`transition-colors duration-150 ${fillClass}`}
+                className={`
+                  outline-none transition-colors duration-150
+                  focus-visible:stroke-ui-accent
+                  ${fillClass}
+                `}
                 style={{ opacity: isDimmed ? 0.45 : 1 }}
                 strokeWidth={isSelected ? 1.5 / zoom : 0.5 / zoom}
                 // Dimmed countries are visually "blocked" and not clickable
