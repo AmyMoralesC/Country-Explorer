@@ -3,26 +3,32 @@
 /**
  * SearchBar.tsx
  *
- * Controlled search input connected to Zustand store.
- * - Typing filters the map in real time (grays out non-matches — see WorldMap).
- * - Pressing Enter selects the first country that matches the current query.
- * - The "Random" button selects a random country from the full list.
+ * Search input + Random button + Clear selection button.
  *
+ * Controlled search input connected to Zustand store.
+ * - Typing filters the map in real time (grays out non-matches).
+ * - Enter key still works but isn't required (UX improvement).
+ * - The "Random" button selects a random country from the full list.
+ * - The "Clear" button deselects the currently selected country.
+ *
+ * Accessibility:
+ * - Input has an associated <label> (visually hidden via sr-only).
+ * - Both action buttons have aria-labels describing their purpose.
+ * - Search icon is decorative (aria-hidden).
  */
 
 import type { Country } from "../types/country.types";
 import { useCountryStore } from "../store/countryStore";
 
 interface SearchBarProps {
-  /** Full country list — used by the "Random" button. */
   countries: Country[];
-  /** Countries matching the current search query — used by Enter-to-select. */
   filteredCountries: Country[];
 }
 
 export function SearchBar({ countries, filteredCountries }: SearchBarProps) {
   const searchQuery = useCountryStore((s) => s.searchQuery);
   const setSearchQuery = useCountryStore((s) => s.setSearchQuery);
+  const selectedCountry = useCountryStore((s) => s.selectedCountry);
   const setSelectedCountry = useCountryStore((s) => s.setSelectedCountry);
 
   const handleRandom = () => {
@@ -31,15 +37,16 @@ export function SearchBar({ countries, filteredCountries }: SearchBarProps) {
     const randomCountry = countries[index];
     if (randomCountry) {
       setSelectedCountry(randomCountry);
-      // Clear search so the user sees the full map, not a filtered view.
       setSearchQuery("");
     }
   };
 
-  // Enter selects the top match from the current filtered results.
+  const handleClear = () => {
+    setSelectedCountry(null);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== "Enter") return;
-
     const topMatch = filteredCountries[0];
     if (topMatch) {
       setSelectedCountry(topMatch);
@@ -47,14 +54,13 @@ export function SearchBar({ countries, filteredCountries }: SearchBarProps) {
   };
 
   return (
-    <div className="flex items-center gap-2 mb-4">
-      {/* Visually hidden label for screen readers */}
+    <div className="flex items-center gap-2 mb-6 mt-1">
       <label htmlFor="country-search" className="sr-only">
         Search for a country
       </label>
 
       <div className="relative flex-1">
-        {/* Search icon — purely decorative */}
+        {/* Search icon */}
         <svg
           aria-hidden="true"
           className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ui-text-muted pointer-events-none"
@@ -68,14 +74,14 @@ export function SearchBar({ countries, filteredCountries }: SearchBarProps) {
         <input
           id="country-search"
           type="text"
-          placeholder="Search by name, capital, or region… (Enter to select)"
+          placeholder="Search by country name"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-ui-border bg-ui-surface text-ui-text-primary placeholder:text-ui-text-muted text-sm shadow-card focus:outline-none focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent transition-all"
         />
 
-        {/* Clear button — only visible when there's a query */}
+        {/* Clear search button */}
         {searchQuery && (
           <button
             onClick={() => setSearchQuery("")}
@@ -87,24 +93,42 @@ export function SearchBar({ countries, filteredCountries }: SearchBarProps) {
         )}
       </div>
 
-      {/* Random country button */}
+      {/* Random country button — dice icon (black→white on hover) */}
       <button
         onClick={handleRandom}
         aria-label="Select a random country"
         title="Random country"
         disabled={countries.length === 0}
-        className="flex items-center justify-center w-10 h-10 rounded-xl border border-ui-border bg-ui-surface text-ui-text-secondary shadow-card hover:bg-ui-accent hover:text-white hover:border-ui-accent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        className="group flex items-center justify-center w-10 h-10 rounded-xl border border-ui-border bg-ui-surface text-ui-text-secondary shadow-card hover:bg-ui-accent hover:border-ui-accent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {/* Dice icon */}
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <rect x="3" y="3" width="18" height="18" rx="3" strokeWidth={2} />
-          <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
-          <circle cx="15.5" cy="8.5" r="1.5" fill="currentColor" />
-          <circle cx="8.5" cy="15.5" r="1.5" fill="currentColor" />
-          <circle cx="15.5" cy="15.5" r="1.5" fill="currentColor" />
-          <circle cx="12" cy="12" r="1.5" fill="currentColor" />
-        </svg>
+        {/* Black dice (visible by default, hidden on hover) */}
+        <img
+          src="/icons/dice_black.png"
+          alt="Random"
+          className="w-5 h-5 group-hover:hidden"
+        />
+        {/* White dice (hidden by default, visible on hover) */}
+        <img
+          src="/icons/dice_white.png"
+          alt="Random"
+          className="w-5 h-5 hidden group-hover:block"
+        />
       </button>
+
+      {/* Clear selection button */}
+      {selectedCountry && (
+        <button
+          onClick={handleClear}
+          aria-label="Deselect current country"
+          title="Clear selection"
+          className="flex items-center justify-center w-10 h-10 rounded-xl border border-ui-border bg-ui-surface text-ui-text-secondary shadow-card hover:bg-red-50 hover:text-red-600 hover:border-red-300 transition-all"
+        >
+          {/* X icon */}
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      )}
     </div>
   );
 }
