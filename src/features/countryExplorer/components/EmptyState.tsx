@@ -1,14 +1,14 @@
 /**
  * EmptyState.tsx
  *
- * Displayed in the right panel when no country has been selected yet.
- * Following the design principle: "An empty screen is an invitation to act."
- * — it tells the user exactly what to do next.
+ * Displayed in the info panel when no country has been selected yet.
+ * No border/rounded corners here — the panel itself is the flush-edged
+ * container now, so this just centers its content within it.
  */
 
 export function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center h-full rounded-xl border-2 border-dashed border-ui-border bg-ui-panel text-center p-8">
+    <div className="flex flex-col items-center justify-center h-full text-center p-8">
       <div className="text-5xl mb-4" aria-hidden="true">🌍</div>
       <h3 className="text-base font-semibold text-ui-text-primary mb-1">
         Select a country
