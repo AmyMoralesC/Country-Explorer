@@ -1,6 +1,8 @@
 "use client";
 
 /**
+ * CountryExplorer.tsx
+ *
  * Root layout component for the feature.
  * Responsibilities:
  *   - Fetch country data via useCountries (TanStack Query)
@@ -21,6 +23,9 @@ import { WorldMap } from "./WorldMap";
 import { SearchBar } from "./SearchBar";
 import { CountryCard } from "./CountryCard";
 import { EmptyState } from "./EmptyState";
+import { DarkModeToggle } from "./DarkModeToggle";
+
+const PANEL_WIDTH = "w-[400px]";
 
 export function CountryExplorer() {
   const { data: countries = [], isLoading, isError } = useCountries();
@@ -40,7 +45,6 @@ export function CountryExplorer() {
   // on the map that doesn't match what's in the search box. If the selected
   // country IS still among the matches (or the search is empty), we leave
   // it selected — searching "co" while Mexico is selected should keep Mexico.
-
   useEffect(() => {
     if (!selectedCountry) return;
     if (searchQuery.trim().length === 0) return;
@@ -56,33 +60,27 @@ export function CountryExplorer() {
       {/* ── Top bar ─────────────────────────────────────────────── */}
       <header className="flex items-center justify-between px-5 py-3 bg-ui-surface border-b border-ui-border shadow-card shrink-0">
         <div className="flex items-center gap-2">
-          <span className="text-xl" aria-hidden="true">🗺️</span>
+          <span className="text-2xl" aria-hidden="true">🗺️</span>
           <h1 className="text-base font-bold text-ui-text-primary tracking-tight">
             Country Explorer
           </h1>
-          <span className="text-xs text-ui-text-muted font-normal ml-1">
+          <span className="text-xs text-ui-text-muted font-normal">
             — Demo
           </span>
         </div>
-        {/* Country count badge */}
-        {countries.length > 0 && (
-          <span className="text-xs text-ui-text-muted font-mono">
-            {filteredCountries.length} / {countries.length} countries
-          </span>
-        )}
+        <DarkModeToggle />
       </header>
 
       {/* ── Main content ────────────────────────────────────────── */}
-      <main className="flex flex-1 gap-4 p-4 min-h-0">
-        <div className="flex flex-col flex-1 min-w-0 gap-3">
-          {/* Search bar */}
+      <main className="flex flex-1 min-h-0">
+        {/* Left column: search + map — keeps its own padding/rounded corners */}
+        <div className="flex flex-col flex-1 min-w-0 gap-3 p-4">
           {isLoading ? (
             <SearchBarSkeleton />
           ) : (
             <SearchBar countries={countries} filteredCountries={filteredCountries} />
           )}
 
-          {/* Map */}
           <div className="flex-1 min-h-0">
             {isLoading && <MapSkeleton />}
             {isError && <MapError />}
@@ -97,7 +95,10 @@ export function CountryExplorer() {
             )}
           </div>
         </div>
-        <aside className="w-80 shrink-0 min-h-0">
+
+        {/* Right column: info panel — flush against top/right/bottom, only
+            a left border separates it from the map (per design spec). */}
+        <aside className={`${PANEL_WIDTH} shrink-0 h-full border-l border-ui-border bg-ui-surface overflow-y-auto`}>
           {selectedCountry ? (
             <CountryCard
               country={selectedCountry}

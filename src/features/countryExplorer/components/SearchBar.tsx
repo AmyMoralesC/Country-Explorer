@@ -54,7 +54,7 @@ export function SearchBar({ countries, filteredCountries }: SearchBarProps) {
   };
 
   return (
-    <div className="flex items-center gap-2 mb-6 mt-1">
+    <div className="flex items-center gap-2 mb-3 mt-1">
       <label htmlFor="country-search" className="sr-only">
         Search for a country
       </label>
@@ -105,13 +105,13 @@ export function SearchBar({ countries, filteredCountries }: SearchBarProps) {
         <img
           src="/icons/dice_black.png"
           alt="Random"
-          className="w-5 h-5 group-hover:hidden"
+          className="w-6 h-6 group-hover:hidden"
         />
         {/* White dice (hidden by default, visible on hover) */}
         <img
           src="/icons/dice_white.png"
           alt="Random"
-          className="w-5 h-5 hidden group-hover:block"
+          className="w-6 h-6 hidden group-hover:block"
         />
       </button>
 
