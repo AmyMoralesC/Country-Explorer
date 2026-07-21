@@ -60,11 +60,11 @@ export function CountryExplorer() {
       {/* ── Top bar ─────────────────────────────────────────────── */}
       <header className="flex items-center justify-between px-5 py-3 bg-ui-surface border-b border-ui-border shadow-card shrink-0">
         <div className="flex items-center gap-2">
-          <span className="text-2xl" aria-hidden="true">🗺️</span>
+          <span className="text-xl" aria-hidden="true">🗺️</span>
           <h1 className="text-base font-bold text-ui-text-primary tracking-tight">
             Country Explorer
           </h1>
-          <span className="text-xs text-ui-text-muted font-normal">
+          <span className="text-xs text-ui-text-muted font-normal ml-1">
             — Demo
           </span>
         </div>
@@ -134,10 +134,10 @@ function MapSkeleton() {
 
 function MapError() {
   return (
-    <div className="w-full h-full rounded-xl border-2 border-dashed border-red-200 bg-red-50 flex flex-col items-center justify-center gap-2">
+    <div className="w-full h-full rounded-xl border-2 border-dashed border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 flex flex-col items-center justify-center gap-2">
       <span className="text-2xl">⚠️</span>
-      <p className="text-sm text-red-600 font-medium">Failed to load country data</p>
-      <p className="text-xs text-red-400">Check your connection and reload the page</p>
+      <p className="text-sm text-red-600 dark:text-red-400 font-medium">Failed to load country data</p>
+      <p className="text-xs text-red-400 dark:text-red-500">Check your connection and reload the page</p>
     </div>
   );
 }
