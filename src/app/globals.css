@@ -2,6 +2,57 @@
 @tailwind components;
 @tailwind utilities;
 
+/**
+ * Design tokens as CSS custom properties, stored as RGB channel triplets
+ * (e.g. "59 130 246", not "#3B82F6"). This is Tailwind's documented pattern
+ * for making a color themeable AND keeping opacity modifiers working
+ * (bg-ui-accent/10, border-ui-border/50, etc.) — see tailwind.config.ts,
+ * where each color resolves to rgb(var(--color-x) / <alpha-value>).
+ *
+ * Switching themes is just toggling the .dark class on <html> — every
+ * component that uses these Tailwind color names (ui-bg, map-ocean, etc.)
+ * repaints automatically, with zero component-level dark: variants needed.
+ */
+:root {
+  --color-map-ocean: 184 212 232;
+  --color-map-land: 237 232 208;
+  --color-map-border: 140 168 192;
+  --color-map-selected: 224 82 82;
+  --color-map-hover: 212 200 154;
+  --color-map-dim: 214 211 204;
+  --color-map-dim-border: 189 186 178;
+
+  --color-ui-bg: 240 244 248;
+  --color-ui-surface: 255 255 255;
+  --color-ui-panel: 250 252 254;
+  --color-ui-border: 221 227 234;
+  --color-ui-text-primary: 26 35 50;
+  --color-ui-text-secondary: 74 85 104;
+  --color-ui-text-muted: 113 128 150;
+  --color-ui-accent: 59 130 246;
+  --color-ui-accent-hover: 37 99 235;
+}
+
+.dark {
+  --color-map-ocean: 22 32 49;
+  --color-map-land: 51 65 85;
+  --color-map-border: 71 85 105;
+  --color-map-selected: 239 68 68;
+  --color-map-hover: 82 98 122;
+  --color-map-dim: 42 52 68;
+  --color-map-dim-border: 60 72 92;
+
+  --color-ui-bg: 15 23 42;
+  --color-ui-surface: 30 41 59;
+  --color-ui-panel: 30 41 59;
+  --color-ui-border: 51 65 85;
+  --color-ui-text-primary: 241 245 249;
+  --color-ui-text-secondary: 203 213 225;
+  --color-ui-text-muted: 148 163 184;
+  --color-ui-accent: 96 165 250;
+  --color-ui-accent-hover: 59 130 246;
+}
+
 @layer base {
   /* Prevent body scroll — the app is a full-height layout */
   html,
@@ -15,7 +66,7 @@
     scroll-behavior: smooth;
   }
 
-  /* Custom scrollbar — subtle, matches the UI palette */
+  /* Custom scrollbar — subtle, matches the UI palette in both themes */
   ::-webkit-scrollbar {
     width: 4px;
   }
@@ -23,10 +74,10 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background-color: #dde3ea;
+    background-color: rgb(var(--color-ui-border));
     border-radius: 999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background-color: #b0bec8;
+    background-color: rgb(var(--color-ui-text-muted));
   }
 }

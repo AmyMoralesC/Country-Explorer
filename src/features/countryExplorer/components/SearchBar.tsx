@@ -93,7 +93,8 @@ export function SearchBar({ countries, filteredCountries }: SearchBarProps) {
         )}
       </div>
 
-      {/* Random country button — dice icon (black→white on hover) */}
+      {/* Random country button — dice icon: black in light+idle, white
+          whenever hovering OR in dark mode (both put it on a dark bg) */}
       <button
         onClick={handleRandom}
         aria-label="Select a random country"
@@ -101,17 +102,15 @@ export function SearchBar({ countries, filteredCountries }: SearchBarProps) {
         disabled={countries.length === 0}
         className="group flex items-center justify-center w-10 h-10 rounded-xl border border-ui-border bg-ui-surface text-ui-text-secondary shadow-card hover:bg-ui-accent hover:border-ui-accent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {/* Black dice (visible by default, hidden on hover) */}
         <img
           src="/icons/dice_black.png"
           alt="Random"
-          className="w-6 h-6 group-hover:hidden"
+          className="w-5 h-5 dark:hidden group-hover:hidden"
         />
-        {/* White dice (hidden by default, visible on hover) */}
         <img
           src="/icons/dice_white.png"
           alt="Random"
-          className="w-6 h-6 hidden group-hover:block"
+          className="w-5 h-5 hidden dark:block group-hover:block"
         />
       </button>
 
@@ -121,7 +120,7 @@ export function SearchBar({ countries, filteredCountries }: SearchBarProps) {
           onClick={handleClear}
           aria-label="Deselect current country"
           title="Clear selection"
-          className="flex items-center justify-center w-10 h-10 rounded-xl border border-ui-border bg-ui-surface text-ui-text-secondary shadow-card hover:bg-red-50 hover:text-red-600 hover:border-red-300 transition-all"
+          className="flex items-center justify-center w-10 h-10 rounded-xl border border-ui-border bg-ui-surface text-ui-text-secondary shadow-card hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600 dark:hover:text-red-400 hover:border-red-300 dark:hover:border-red-800 transition-all"
         >
           {/* X icon */}
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

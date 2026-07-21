@@ -1,6 +1,8 @@
 "use client";
 
 /**
+ * WorldMap.tsx
+ *
  * Renders an interactive SVG world map from GeoJSON path data.
  * Supports pan (drag) and wheel zoom via CSS transform on a <g> group.
  *
@@ -141,7 +143,7 @@ export function WorldMap({
             const admCode = feature.properties.ADM0_A3 as string;
             const isSelected = selectedCountry?.cca3 === admCode;
 
-            // A country is "dimmed" when a search is active and it's not
+            // A country is "dimmed" when a search is active AND it's not
             // among the current matches. The selected country always stays
             // visually prominent, even if it wouldn't currently match — this
             // avoids a jarring flash if a user clears/edits the search after
@@ -153,7 +155,7 @@ export function WorldMap({
             if (isSelected) {
               fillClass = "fill-map-selected stroke-red-700";
             } else if (isDimmed) {
-              fillClass = "fill-gray-300 stroke-gray-400";
+              fillClass = "fill-map-dim stroke-map-dim-border";
             }
 
             return (

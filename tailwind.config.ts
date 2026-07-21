@@ -1,6 +1,18 @@
 import type { Config } from "tailwindcss";
 
+/**
+ * Small helper so every color entry follows the same
+ * rgb(var(--color-x) / <alpha-value>) pattern — this is what makes
+ * Tailwind's opacity modifiers (bg-ui-accent/10, border-ui-border/50...)
+ * keep working even though the actual color now lives in a CSS variable
+ * that swaps with the .dark class. See globals.css for the variable values.
+ */
+function withOpacity(variableName: string) {
+  return `rgb(var(${variableName}) / <alpha-value>)`;
+}
+
 const config: Config = {
+  darkMode: "class",
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -12,25 +24,27 @@ const config: Config = {
       colors: {
         // Map palette — matches the blue/cream wireframe style
         map: {
-          ocean: "#B8D4E8",
-          land: "#EDE8D0",
-          border: "#8CA8C0",
-          selected: "#E05252",
-          hover: "#D4C89A",
+          ocean: withOpacity("--color-map-ocean"),
+          land: withOpacity("--color-map-land"),
+          border: withOpacity("--color-map-border"),
+          selected: withOpacity("--color-map-selected"),
+          hover: withOpacity("--color-map-hover"),
+          dim: withOpacity("--color-map-dim"),
+          "dim-border": withOpacity("--color-map-dim-border"),
         },
         // UI palette — clean, modern, approachable
         ui: {
-          bg: "#F0F4F8",
-          surface: "#FFFFFF",
-          panel: "#FAFCFE",
-          border: "#DDE3EA",
+          bg: withOpacity("--color-ui-bg"),
+          surface: withOpacity("--color-ui-surface"),
+          panel: withOpacity("--color-ui-panel"),
+          border: withOpacity("--color-ui-border"),
           text: {
-            primary: "#1A2332",
-            secondary: "#4A5568",
-            muted: "#718096",
+            primary: withOpacity("--color-ui-text-primary"),
+            secondary: withOpacity("--color-ui-text-secondary"),
+            muted: withOpacity("--color-ui-text-muted"),
           },
-          accent: "#3B82F6",
-          "accent-hover": "#2563EB",
+          accent: withOpacity("--color-ui-accent"),
+          "accent-hover": withOpacity("--color-ui-accent-hover"),
         },
       },
       fontFamily: {

@@ -52,19 +52,19 @@ export function CountryCard({ country, allCountries, onCountrySelect }: CountryC
 
         {/* Core info rows */}
         <div>
-          <InfoRow icon="/icons/government_black.png" label="Capital" value={country.capital} />
-          <InfoRow icon="/icons/timezone_black.png" label="Timezones" value={country.timezones.join(", ")} />
-          <InfoRow icon="/icons/calling_code_black.png" label="Calling code" value={country.callingCode} />
-          <InfoRow icon="/icons/language_black.png" label="Languages" value={country.languages.join(", ")} />
-          <InfoRow icon="/icons/demonym_black.png" label="Demonym" value={country.demonym} />
-          <InfoRow icon="/icons/people_black.png" label="Population" value={formatPopulation(country.population)} />
+          <InfoRow icon="government" label="Capital" value={country.capital} />
+          <InfoRow icon="timezone" label="Timezones" value={country.timezones.join(", ")} />
+          <InfoRow icon="calling_code" label="Calling code" value={country.callingCode} />
+          <InfoRow icon="language" label="Languages" value={country.languages.join(", ")} />
+          <InfoRow icon="demonym" label="Demonym" value={country.demonym} />
+          <InfoRow icon="people" label="Population" value={formatPopulation(country.population)} />
         </div>
 
         {/* Currency + GINI */}
         <div className="grid grid-cols-2 gap-2">
-          <StatBox icon="/icons/coins_black.png" label="Currency" value={currencyDisplay} />
+          <StatBox icon="coins" label="Currency" value={currencyDisplay} />
           <StatBox
-            icon="/icons/gini_black.png"
+            icon="gini"
             label="Gini index"
             value={country.gini !== null ? country.gini.toFixed(1) : "N/A"}
           />
@@ -72,8 +72,8 @@ export function CountryCard({ country, allCountries, onCountrySelect }: CountryC
 
         {/* Coordinates + Area */}
         <div className="grid grid-cols-2 gap-2">
-          <StatBox icon="/icons/coordinates_black.png" label="Coordinates" value={formatCoordinates(country.latlng)} />
-          <StatBox icon="/icons/area_black.png" label="Area" value={formatArea(country.area)} />
+          <StatBox icon="coordinates" label="Coordinates" value={formatCoordinates(country.latlng)} />
+          <StatBox icon="area" label="Area" value={formatArea(country.area)} />
         </div>
 
         <div className="border-t border-ui-border/60" />

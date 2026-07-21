@@ -5,8 +5,11 @@
  * coordinates + area). Extracted from CountryCard so both the card and
  * this file stay under the project's per-component line limit.
  *
- * `icon` is a path to a PNG asset, same convention as InfoRow.
+ * `icon` is an icon NAME (e.g. "coins"), same convention as InfoRow —
+ * ThemedIcon resolves it to the correct black/white PNG for the theme.
  */
+
+import { ThemedIcon } from "./ThemedIcon";
 
 interface StatBoxProps {
   label: string;
@@ -18,7 +21,7 @@ export function StatBox({ label, value, icon }: StatBoxProps) {
   return (
     <div className="flex flex-col gap-0.5 p-2.5 rounded-lg bg-ui-bg border border-ui-border">
       <span className="text-[10px] uppercase tracking-wider text-ui-text-muted flex items-center gap-1">
-        <img src={icon} alt="" aria-hidden="true" className="w-3.5 h-3.5 opacity-70" />
+        <ThemedIcon name={icon} className="w-3.5 h-3.5 opacity-70" />
         {label}
       </span>
       <span className="text-sm font-semibold text-ui-text-primary leading-tight">
