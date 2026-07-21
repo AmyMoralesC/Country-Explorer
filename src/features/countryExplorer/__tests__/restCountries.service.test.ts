@@ -1,64 +1,73 @@
 /**
  * restCountries.service.test.ts
  *
- * Tests for the adapter that maps raw API data → internal Country model.
- * We mock fetch() so we never make real network calls in tests.
+ * Tests for the adapter that maps raw REST Countries v5 API data →
+ * internal Country model. We mock fetch() so we never make real network
+ * calls in tests.
  *
  * This is the most important test file from a "Type Safety Decisions"
- * perspective — it verifies that our adapter handles optional fields
- * correctly rather than crashing when the API omits them.
+ * perspective — it verifies that our adapter handles v5's nested shape
+ * (and its optional fields) correctly rather than crashing when the API
+ * omits them.
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { fetchAllCountries } from "../services/restCountries.service";
-import type { CountryApiResponse } from "../types/country.types";
+import type { CountryApiResponse, CountryApiResponseV5 } from "../types/country.types";
 
-// Minimal valid raw API response
-const rawCostaRica: CountryApiResponse = {
-  name: { common: "Costa Rica", official: "Republic of Costa Rica" },
-  cca2: "CR",
-  cca3: "CRI",
-  flag: "🇨🇷",
-  flags: { png: "https://flagcdn.com/w320/cr.png", svg: "", alt: "Flag of Costa Rica" },
+// Minimal valid raw v5 API object
+const rawCostaRica: CountryApiResponseV5 = {
+  names: { common: "Costa Rica", official: "Republic of Costa Rica" },
+  codes: { alpha_2: "CR", alpha_3: "CRI" },
+  capitals: [{ name: "San José", coordinates: { lat: 9.93, lng: -84.08 } }],
+  flag: { emoji: "🇨🇷", url_png: "https://flagcdn.com/w320/cr.png" },
   region: "Americas",
   subregion: "Central America",
-  capital: ["San José"],
-  latlng: [9.748917, -83.753428],
-  area: 51100,
-  population: 5180829,
-  timezones: ["UTC-06:00"],
+  area: { kilometers: 51100 },
   borders: ["NIC", "PAN"],
-  currencies: { CRC: { name: "Costa Rican colón", symbol: "₡" } },
-  languages: { spa: "Spanish" },
+  calling_codes: ["506"],
+  coordinates: { lat: 9.748917, lng: -83.753428 },
+  currencies: [{ code: "CRC", name: "Costa Rican colón", symbol: "₡" }],
   demonyms: { eng: { m: "Costa Rican", f: "Costa Rican" } },
-  gini: { "2021": 48.5 },
-  idd: { root: "+5", suffixes: ["06"] },
+  economy: { gini_coefficient: { "2021": 48.5 } },
+  languages: [{ name: "Spanish" }],
+  timezones: ["UTC-06:00"],
+  population: 5180829,
 };
 
-// Edge case: island nation with many optional fields omitted
-const rawIslandNation: CountryApiResponse = {
-  name: { common: "Maldives", official: "Republic of the Maldives" },
-  cca2: "MV",
-  cca3: "MDV",
-  flag: "🇲🇻",
-  flags: { png: "https://flagcdn.com/w320/mv.png", svg: "" },
+// Edge case: island nation with most optional fields omitted
+const rawIslandNation: CountryApiResponseV5 = {
+  names: { common: "Maldives", official: "Republic of the Maldives" },
+  codes: { alpha_2: "MV", alpha_3: "MDV" },
+  flag: { emoji: "🇲🇻", url_png: "https://flagcdn.com/w320/mv.png" },
   region: "Asia",
-  latlng: [3.25, 73.0],
+  coordinates: { lat: 3.25, lng: 73.0 },
   population: 540544,
   timezones: ["UTC+05:00"],
-  // No subregion, capital, area, borders, currencies, languages, demonyms, gini, idd
+  // No capitals, subregion, area, borders, calling_codes, currencies,
+  // languages, demonyms, economy — the adapter must fall back safely.
 };
+
+function mockFetchWithObjects(objects: CountryApiResponseV5[]) {
+  const wrapper: CountryApiResponse = {
+    data: {
+      objects,
+      meta: { total: objects.length, count: objects.length },
+    },
+  };
+  global.fetch = vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => wrapper,
+  });
+}
 
 beforeEach(() => {
   vi.resetAllMocks();
 });
 
-describe("fetchAllCountries adapter", () => {
+describe("fetchAllCountries adapter (REST Countries v5)", () => {
   it("maps raw API response to internal Country model", async () => {
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => [rawCostaRica],
-    });
+    mockFetchWithObjects([rawCostaRica]);
 
     const countries = await fetchAllCountries();
     const country = countries[0];
@@ -71,20 +80,14 @@ describe("fetchAllCountries adapter", () => {
   });
 
   it("resolves Gini to the latest year's value", async () => {
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => [rawCostaRica],
-    });
+    mockFetchWithObjects([rawCostaRica]);
 
     const [country] = await fetchAllCountries();
     expect(country?.gini).toBe(48.5);
   });
 
-  it("maps currencies record to Currency array", async () => {
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => [rawCostaRica],
-    });
+  it("maps the currencies array to the internal Currency shape", async () => {
+    mockFetchWithObjects([rawCostaRica]);
 
     const [country] = await fetchAllCountries();
     expect(country?.currencies).toHaveLength(1);
@@ -92,10 +95,7 @@ describe("fetchAllCountries adapter", () => {
   });
 
   it("uses safe defaults when optional fields are missing (island nation)", async () => {
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => [rawIslandNation],
-    });
+    mockFetchWithObjects([rawIslandNation]);
 
     const [country] = await fetchAllCountries();
 

@@ -5,36 +5,41 @@
  */
 
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { renderWithProviders } from "../../../test/test-utils";
 import { BordersList } from "../components/BordersList";
 import { mockCountries, mockNicaragua } from "./fixtures";
 
 describe("BordersList", () => {
   it("shows a message when there are no borders", () => {
-    render(
+    renderWithProviders(
       <BordersList borderCodes={[]} allCountries={mockCountries} onSelect={vi.fn()} />
     );
     expect(screen.getByText(/No land borders/i)).toBeInTheDocument();
   });
 
-  it("renders border country names", () => {
-    render(
+  it("renders border country codes", () => {
+    renderWithProviders(
       <BordersList
         borderCodes={["NIC", "PAN"]}
         allCountries={mockCountries}
         onSelect={vi.fn()}
       />
     );
-    // Nicaragua is in mockCountries; PAN is not, so it should be omitted gracefully
-    expect(screen.getByText("Nicaragua")).toBeInTheDocument();
+    // The redesigned card shows the flag + cca3 code as visible text (not
+    // the full country name) — the name is still exposed via aria-label
+    // for accessibility, which the next test verifies.
+    // Nicaragua is in mockCountries; PAN is not, so it should be omitted gracefully.
+    expect(screen.getByText("NIC")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Select Nicaragua/i })).toBeInTheDocument();
   });
 
   it("calls onSelect with the correct country when a border is clicked", async () => {
     const user = userEvent.setup();
     const handleSelect = vi.fn();
 
-    render(
+    renderWithProviders(
       <BordersList
         borderCodes={["NIC"]}
         allCountries={mockCountries}
@@ -46,28 +51,32 @@ describe("BordersList", () => {
     expect(handleSelect).toHaveBeenCalledWith(mockNicaragua);
   });
 
-  it("shows expand button when borders exceed MAX_VISIBLE (3)", async () => {
+  it("shows expand button when borders exceed MAX_VISIBLE (4)", async () => {
     const user = userEvent.setup();
 
-    // Give Costa Rica 4 mock borders (only NIC resolves, but the count logic uses borderCodes)
-    // We need 4 countries in allCountries for this to work properly
-    const extraCountry = { ...mockNicaragua, cca3: "HND", commonName: "Honduras", cca2: "HN" };
-    const extraCountry2 = { ...mockNicaragua, cca3: "GTM", commonName: "Guatemala", cca2: "GT" };
-    const allFour = [...mockCountries, extraCountry, extraCountry2];
+    // BordersList shows MAX_VISIBLE=4 cards before collapsing the rest —
+    // we need 5 resolvable border countries to see the "+1 more" card.
+    const extraCountries = [
+      { ...mockNicaragua, cca3: "HND", commonName: "Honduras", cca2: "HN" },
+      { ...mockNicaragua, cca3: "GTM", commonName: "Guatemala", cca2: "GT" },
+      { ...mockNicaragua, cca3: "BLZ", commonName: "Belize", cca2: "BZ" },
+    ];
+    const allCountries = [...mockCountries, ...extraCountries];
 
-    render(
+    renderWithProviders(
       <BordersList
-        borderCodes={["NIC", "JPN", "HND", "GTM"]}
-        allCountries={allFour}
+        borderCodes={["NIC", "JPN", "HND", "GTM", "BLZ"]}
+        allCountries={allCountries}
         onSelect={vi.fn()}
       />
     );
 
-    // Initially, "+1 more" button should be visible (4 borders, 3 visible)
-    expect(screen.getByText(/\+1 more/)).toBeInTheDocument();
+    // 5 borders resolve, MAX_VISIBLE=4 are shown, 1 is hidden behind "+1 more"
+    expect(screen.getByText(/\+1/)).toBeInTheDocument();
+    expect(screen.getByText(/more/)).toBeInTheDocument();
 
     // Click to expand
-    await user.click(screen.getByText(/\+1 more/));
+    await user.click(screen.getByText(/more/));
     expect(screen.getByText("Show less")).toBeInTheDocument();
   });
 });

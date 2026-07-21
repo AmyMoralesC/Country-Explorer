@@ -4,17 +4,32 @@
  * Tests for the info panel component.
  * We test what the USER sees, not implementation details.
  * Guiding question: "If I render this component, does it show the right info?"
+ *
+ * CountryCard renders <CountryImage>, which calls useCountryImage — a
+ * TanStack Query hook that fetches a Wikipedia photo. We mock that hook
+ * directly (not just the underlying fetch) so these tests:
+ *   1. Never make a real network call.
+ *   2. Render synchronously with the flag fallback already in place —
+ *      no need to await a loading state that has nothing to do with what
+ *      this test file is actually verifying.
+ * Wikipedia's own fetch/scoring logic is exercised separately wherever
+ * the API route itself is tested, not here.
  */
 
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { renderWithProviders } from "../../../test/test-utils";
 import { CountryCard } from "../components/CountryCard";
 import { mockCostaRica, mockNicaragua, mockCountries } from "./fixtures";
 
+vi.mock("../hooks/useCountryImage", () => ({
+  useCountryImage: () => ({ data: null, isLoading: false }),
+}));
+
 describe("CountryCard", () => {
   it("renders the country name", () => {
-    render(
+    renderWithProviders(
       <CountryCard
         country={mockCostaRica}
         allCountries={mockCountries}
@@ -25,7 +40,7 @@ describe("CountryCard", () => {
   });
 
   it("renders the official name", () => {
-    render(
+    renderWithProviders(
       <CountryCard
         country={mockCostaRica}
         allCountries={mockCountries}
@@ -36,7 +51,7 @@ describe("CountryCard", () => {
   });
 
   it("renders the country code", () => {
-    render(
+    renderWithProviders(
       <CountryCard
         country={mockCostaRica}
         allCountries={mockCountries}
@@ -47,7 +62,7 @@ describe("CountryCard", () => {
   });
 
   it("renders the capital city", () => {
-    render(
+    renderWithProviders(
       <CountryCard
         country={mockCostaRica}
         allCountries={mockCountries}
@@ -58,7 +73,7 @@ describe("CountryCard", () => {
   });
 
   it("renders the region and subregion", () => {
-    render(
+    renderWithProviders(
       <CountryCard
         country={mockCostaRica}
         allCountries={mockCountries}
@@ -69,7 +84,7 @@ describe("CountryCard", () => {
   });
 
   it("renders formatted population", () => {
-    render(
+    renderWithProviders(
       <CountryCard
         country={mockCostaRica}
         allCountries={mockCountries}
@@ -81,7 +96,7 @@ describe("CountryCard", () => {
   });
 
   it("renders the currency symbol and code", () => {
-    render(
+    renderWithProviders(
       <CountryCard
         country={mockCostaRica}
         allCountries={mockCountries}
@@ -95,7 +110,7 @@ describe("CountryCard", () => {
     const user = userEvent.setup();
     const handleSelect = vi.fn();
 
-    render(
+    renderWithProviders(
       <CountryCard
         country={mockCostaRica}
         allCountries={mockCountries}
@@ -113,7 +128,7 @@ describe("CountryCard", () => {
 
   it("shows 'N/A' for Gini when value is null", () => {
     const countryWithoutGini = { ...mockCostaRica, gini: null };
-    render(
+    renderWithProviders(
       <CountryCard
         country={countryWithoutGini}
         allCountries={mockCountries}
