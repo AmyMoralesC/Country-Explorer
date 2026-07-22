@@ -4,7 +4,9 @@
  * WorldMap.tsx
  *
  * Renders an interactive SVG world map from GeoJSON path data.
- * Supports pan (drag) and wheel zoom via CSS transform on a <g> group.
+ * All pan/zoom/gesture logic (mouse drag, wheel zoom, touch pan, pinch
+ * zoom) lives in useMapInteraction — this component only wires that state
+ * up to the actual <svg>/<path> markup.
  *
  * Key decisions:
  * - A single <svg> with a transformable inner <g> keeps all coordinate
@@ -20,6 +22,7 @@
 import { useRef, useState, useCallback, useEffect, useMemo } from "react";
 import type { Country, GeoJsonData, GeoJsonFeature } from "../types/country.types";
 import { geometryToPath, MAP_WIDTH, MAP_HEIGHT } from "../utils/projection";
+import { useMapInteraction } from "../hooks/useMapInteraction";
 import { ZoomControls } from "./ZoomControls";
 import { MapGridLines } from "./MapGridLines";
 
@@ -34,10 +37,6 @@ interface WorldMapProps {
   onCountryClick: (country: Country) => void;
 }
 
-const MIN_ZOOM = 1;
-const MAX_ZOOM = 8;
-const ZOOM_STEP = 0.001;
-
 export function WorldMap({
   countries,
   visibleCountries,
@@ -46,10 +45,7 @@ export function WorldMap({
   onCountryClick,
 }: WorldMapProps) {
   const [geoData, setGeoData] = useState<GeoJsonData | null>(null);
-  const [zoom, setZoom] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const dragStart = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
+  const { zoom, pan, isDragging, svgRef, zoomIn, zoomOut, reset, handlers } = useMapInteraction();
 
   // O(1) lookup: cca3 → Country, rebuilt only when the full list changes
   const countryByCca3 = useRef<Map<string, Country>>(new Map());
@@ -58,7 +54,6 @@ export function WorldMap({
   }, [countries]);
 
   // O(1) membership check for "does this country match the search?"
-  // Recomputed only when the filtered list changes (i.e. on every keystroke).
   const visibleCca3Set = useMemo(
     () => new Set(visibleCountries.map((c) => c.cca3)),
     [visibleCountries]
@@ -71,46 +66,6 @@ export function WorldMap({
       .then((data: unknown) => setGeoData(data as GeoJsonData))
       .catch((err) => console.error("Failed to load GeoJSON:", err));
   }, []);
-
-  // Both axes are clamped so the map can never be dragged past its own
-  // edges — like Google Maps' boundary behavior. At MIN_ZOOM the map exactly
-  // fills the viewport, so the allowed range collapses to zero and panning
-  // is blocked entirely in both directions, which is the "wall" effect.
-  const clampPan = useCallback((x: number, y: number, currentZoom: number) => {
-    const minX = MAP_WIDTH - MAP_WIDTH * currentZoom; // <= 0
-    const maxX = 0;
-    const minY = MAP_HEIGHT - MAP_HEIGHT * currentZoom; // <= 0
-    const maxY = 0;
-    return {
-      x: Math.min(maxX, Math.max(minX, x)),
-      y: Math.min(maxY, Math.max(minY, y)),
-    };
-  }, []);
-
-  // Re-clamp whenever zoom changes (e.g. zooming out after having panned
-  // near an edge would otherwise leave pan outside the new bounds).
-  useEffect(() => {
-    setPan((prev) => clampPan(prev.x, prev.y, zoom));
-  }, [zoom, clampPan]);
-
-  const handleWheel = useCallback((e: React.WheelEvent<SVGSVGElement>) => {
-    e.preventDefault();
-    setZoom((prev) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, prev - e.deltaY * ZOOM_STEP)));
-  }, []);
-
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    setIsDragging(true);
-    dragStart.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y };
-  }, [pan]);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDragging) return;
-    const nextX = dragStart.current.panX + (e.clientX - dragStart.current.x);
-    const nextY = dragStart.current.panY + (e.clientY - dragStart.current.y);
-    setPan(clampPan(nextX, nextY, zoom));
-  }, [isDragging, zoom, clampPan]);
-
-  const handleMouseUp = useCallback(() => setIsDragging(false), []);
 
   // Note: we key/match on ADM0_A3, not ISO_A3. The Natural Earth 110m dataset
   // leaves ISO_A3 as the placeholder "-99" for several countries (France,
@@ -126,13 +81,10 @@ export function WorldMap({
   return (
     <div className="relative w-full h-full rounded-xl overflow-hidden bg-map-ocean shadow-panel">
       <svg
+        ref={svgRef}
         viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
-        className={`w-full h-full ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}
-        onWheel={handleWheel}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
+        className={`w-full h-full touch-none ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}
+        {...handlers}
         aria-label="Interactive world map"
         role="img"
       >
@@ -195,12 +147,7 @@ export function WorldMap({
         )}
       </svg>
 
-      <ZoomControls
-        zoom={zoom}
-        onZoomIn={() => setZoom((z) => Math.min(MAX_ZOOM, z + 0.5))}
-        onZoomOut={() => setZoom((z) => Math.max(MIN_ZOOM, z - 0.5))}
-        onReset={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}
-      />
+      <ZoomControls zoom={zoom} onZoomIn={zoomIn} onZoomOut={zoomOut} onReset={reset} />
     </div>
   );
 }

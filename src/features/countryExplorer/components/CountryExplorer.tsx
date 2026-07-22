@@ -25,7 +25,13 @@ import { CountryCard } from "./CountryCard";
 import { EmptyState } from "./EmptyState";
 import { DarkModeToggle } from "./DarkModeToggle";
 
-const PANEL_WIDTH = "w-[400px]";
+// Tailwind's scanner reads source files as plain text, looking for
+// complete class name tokens — it doesn't evaluate JS, so a class built
+// via string interpolation (e.g. `md:${PANEL_WIDTH}`) would never be
+// detected unless that exact combined string already appears literally
+// somewhere in the file. Defining the FULL responsive fragment here
+// means "md:w-[400px]" exists as plain text for the scanner to find.
+const PANEL_WIDTH_CLASS = "md:w-[400px]";
 
 export function CountryExplorer() {
   const { data: countries = [], isLoading, isError } = useCountries();
@@ -58,13 +64,14 @@ export function CountryExplorer() {
   return (
     <div className="flex flex-col h-screen bg-ui-bg">
       {/* ── Top bar ─────────────────────────────────────────────── */}
-      <header className="flex items-center justify-between px-5 py-3 bg-ui-surface border-b border-ui-border shadow-card shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="text-xl" aria-hidden="true">🗺️</span>
-          <h1 className="text-base font-bold text-ui-text-primary tracking-tight">
+      <header className="flex items-center justify-between gap-2 px-4 sm:px-5 py-4 sm:py-5 bg-ui-surface border-b border-ui-border shadow-card shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-xl shrink-0" aria-hidden="true">🗺️</span>
+          <h1 className="text-base font-bold text-ui-text-primary tracking-tight truncate">
             Country Explorer
           </h1>
-          <span className="text-xs text-ui-text-muted font-normal ml-1">
+          {/* Hidden on very small screens — the title itself is what matters there */}
+          <span className="hidden sm:inline text-xs text-ui-text-muted font-normal ml-1 shrink-0">
             — Demo
           </span>
         </div>
@@ -72,16 +79,22 @@ export function CountryExplorer() {
       </header>
 
       {/* ── Main content ────────────────────────────────────────── */}
-      <main className="flex flex-1 min-h-0">
-        {/* Left column: search + map — keeps its own padding/rounded corners */}
-        <div className="flex flex-col flex-1 min-w-0 gap-3 p-4">
+      {/* Mobile: single scrollable column (map, fixed height, then the
+          panel below it with natural height) — per design spec, the panel
+          appears BELOW the map on small screens, not as an overlay.
+          Desktop (md+): side-by-side, each column manages its own height. */}
+      <main className="flex flex-col md:flex-row flex-1 min-h-0 overflow-y-auto md:overflow-hidden">
+        {/* Map column — keeps its own padding/rounded corners */}
+        <div className="flex flex-col shrink-0 md:flex-1 md:min-w-0 md:min-h-0 gap-3 p-4">
           {isLoading ? (
             <SearchBarSkeleton />
           ) : (
             <SearchBar countries={countries} filteredCountries={filteredCountries} />
           )}
 
-          <div className="flex-1 min-h-0">
+          {/* Fixed viewport-relative height on mobile (map needs a real
+              pixel budget to be usable); flexes to fill the row on desktop. */}
+          <div className="h-[50vh] md:h-auto md:flex-1 md:min-h-0">
             {isLoading && <MapSkeleton />}
             {isError && <MapError />}
             {!isLoading && !isError && (
@@ -96,9 +109,12 @@ export function CountryExplorer() {
           </div>
         </div>
 
-        {/* Right column: info panel — flush against top/right/bottom, only
-            a left border separates it from the map (per design spec). */}
-        <aside className={`${PANEL_WIDTH} shrink-0 h-full border-l border-ui-border bg-ui-surface overflow-y-auto`}>
+        {/* Info panel — full width below the map on mobile (border-t as the
+            divider); fixed width, full height, flush right/top/bottom with
+            only a left border on desktop (per design spec). */}
+        <aside
+          className={`w-full ${PANEL_WIDTH_CLASS} md:shrink-0 md:h-full border-t md:border-t-0 md:border-l border-ui-border bg-ui-surface md:overflow-y-auto`}
+        >
           {selectedCountry ? (
             <CountryCard
               country={selectedCountry}

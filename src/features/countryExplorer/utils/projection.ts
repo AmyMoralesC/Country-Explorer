@@ -20,7 +20,7 @@
 export const MAP_WIDTH = 1000;
 
 // Height of the actual equirectangular projection (lat -90..90 → 0..MAP_BASE_HEIGHT).
-const MAP_BASE_HEIGHT = 542;
+const MAP_BASE_HEIGHT = 534;
 
 // Extra ocean band reserved above the projection — purely cosmetic framing.
 const TOP_PADDING = 8;
