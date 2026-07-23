@@ -1,8 +1,6 @@
 "use client";
 
 /**
- * CountryExplorer.tsx
- *
  * Root layout component for the feature.
  * Responsibilities:
  *   - Fetch country data via useCountries (TanStack Query)
@@ -14,7 +12,7 @@
  * All rendering logic lives in child components.
  */
 
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useCountries } from "../hooks/useCountries";
 import { useCountryFilter } from "../hooks/useCountryFilter";
 import { useCountryStore } from "../store/countryStore";
@@ -25,7 +23,7 @@ import { CountryCard } from "./CountryCard";
 import { EmptyState } from "./EmptyState";
 import { DarkModeToggle } from "./DarkModeToggle";
 
-const PANEL_WIDTH = "w-[400px]";
+const PANEL_WIDTH_CLASS = "md:w-[400px]";
 
 export function CountryExplorer() {
   const { data: countries = [], isLoading, isError } = useCountries();
@@ -35,16 +33,13 @@ export function CountryExplorer() {
 
   const filteredCountries = useCountryFilter({ countries, query: searchQuery });
 
-  const handleCountrySelect = (country: Country) => {
+  const handleCountrySelect = useCallback((country: Country) => {
     setSelectedCountry(country);
-  };
+  }, [setSelectedCountry]);
 
   // Keep the selection in sync with the search: if the person types a query
   // that no longer includes the currently selected country, clear the
-  // selection. This avoids the confusing state of a red-highlighted country
-  // on the map that doesn't match what's in the search box. If the selected
-  // country IS still among the matches (or the search is empty), we leave
-  // it selected — searching "co" while Mexico is selected should keep Mexico.
+  // selection.
   useEffect(() => {
     if (!selectedCountry) return;
     if (searchQuery.trim().length === 0) return;
@@ -58,13 +53,13 @@ export function CountryExplorer() {
   return (
     <div className="flex flex-col h-screen bg-ui-bg">
       {/* ── Top bar ─────────────────────────────────────────────── */}
-      <header className="flex items-center justify-between px-5 py-3 bg-ui-surface border-b border-ui-border shadow-card shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="text-xl" aria-hidden="true">🗺️</span>
-          <h1 className="text-base font-bold text-ui-text-primary tracking-tight">
+      <header className="flex items-center justify-between gap-2 px-4 sm:px-5 py-4 sm:py-5 bg-ui-surface border-b border-ui-border shadow-card shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-xl shrink-0" aria-hidden="true">🗺️</span>
+          <h1 className="text-base font-bold text-ui-text-primary tracking-tight truncate">
             Country Explorer
           </h1>
-          <span className="text-xs text-ui-text-muted font-normal ml-1">
+          <span className="hidden sm:inline text-xs text-ui-text-muted font-normal ml-1 shrink-0">
             — Demo
           </span>
         </div>
@@ -72,16 +67,16 @@ export function CountryExplorer() {
       </header>
 
       {/* ── Main content ────────────────────────────────────────── */}
-      <main className="flex flex-1 min-h-0">
-        {/* Left column: search + map — keeps its own padding/rounded corners */}
-        <div className="flex flex-col flex-1 min-w-0 gap-3 p-4">
+      <main className="flex flex-col md:flex-row flex-1 min-h-0 overflow-y-auto overscroll-contain md:overflow-hidden">
+        {/* Map column */}
+        <div className="flex flex-col shrink-0 md:flex-1 md:min-w-0 md:min-h-0 gap-3 p-4">
           {isLoading ? (
             <SearchBarSkeleton />
           ) : (
             <SearchBar countries={countries} filteredCountries={filteredCountries} />
           )}
 
-          <div className="flex-1 min-h-0">
+          <div className="aspect-[1000/550] w-full md:aspect-auto md:h-auto md:flex-1 md:min-h-0">
             {isLoading && <MapSkeleton />}
             {isError && <MapError />}
             {!isLoading && !isError && (
@@ -96,9 +91,10 @@ export function CountryExplorer() {
           </div>
         </div>
 
-        {/* Right column: info panel — flush against top/right/bottom, only
-            a left border separates it from the map (per design spec). */}
-        <aside className={`${PANEL_WIDTH} shrink-0 h-full border-l border-ui-border bg-ui-surface overflow-y-auto`}>
+        {/* Info panel */}
+        <aside
+          className={`flex-1 md:flex-none w-full ${PANEL_WIDTH_CLASS} md:shrink-0 md:h-full border-t md:border-t-0 md:border-l border-ui-border bg-ui-surface md:overflow-y-auto`}
+        >
           {selectedCountry ? (
             <CountryCard
               country={selectedCountry}

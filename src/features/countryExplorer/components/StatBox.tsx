@@ -1,9 +1,6 @@
 /**
- * StatBox.tsx
- *
  * A small labeled stat card used in 2-column grids (currency + GINI,
- * coordinates + area). Extracted from CountryCard so both the card and
- * this file stay under the project's per-component line limit.
+ * coordinates + area). Extracted from CountryCard.
  *
  * `icon` is an icon NAME (e.g. "coins"), same convention as InfoRow —
  * ThemedIcon resolves it to the correct black/white PNG for the theme.

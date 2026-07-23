@@ -1,5 +1,4 @@
 /**
- * country.types.ts
  * REST Countries v5 API types + internal Country model
  */
 

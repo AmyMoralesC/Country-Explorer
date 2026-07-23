@@ -1,18 +1,3 @@
-/**
- * test-utils.tsx
- *
- * Any component that uses a TanStack Query hook (useCountries,
- * useCountryImage, etc.) needs a QueryClientProvider ancestor — without
- * one, useQuery throws immediately ("No QueryClient set"). Rather than
- * wrap every test file's render() calls by hand, this file exports a
- * drop-in replacement for Testing Library's render() that adds one.
- *
- * A fresh QueryClient per render (not a shared singleton) keeps tests
- * isolated — no leftover cache from one test leaking into the next.
- * retry: false makes failed queries fail fast instead of retrying with
- * backoff delays, which would otherwise make tests slow or flaky.
- */
-
 import type { ReactElement } from "react";
 import { render } from "@testing-library/react";
 import type { RenderOptions } from "@testing-library/react";

@@ -1,20 +1,12 @@
 "use client";
 
 /**
- * SearchBar.tsx
- *
  * Search input + Random button + Clear selection button.
  *
  * Controlled search input connected to Zustand store.
  * - Typing filters the map in real time (grays out non-matches).
- * - Enter key still works but isn't required (UX improvement).
  * - The "Random" button selects a random country from the full list.
  * - The "Clear" button deselects the currently selected country.
- *
- * Accessibility:
- * - Input has an associated <label> (visually hidden via sr-only).
- * - Both action buttons have aria-labels describing their purpose.
- * - Search icon is decorative (aria-hidden).
  */
 
 import type { Country } from "../types/country.types";
@@ -54,7 +46,7 @@ export function SearchBar({ countries, filteredCountries }: SearchBarProps) {
   };
 
   return (
-    <div className="flex items-center gap-2 mb-3 mt-1">
+    <div className="flex items-center gap-2 mb-2 mt-1">
       <label htmlFor="country-search" className="sr-only">
         Search for a country
       </label>
@@ -93,14 +85,13 @@ export function SearchBar({ countries, filteredCountries }: SearchBarProps) {
         )}
       </div>
 
-      {/* Random country button — dice icon: black in light+idle, white
-          whenever hovering OR in dark mode (both put it on a dark bg) */}
+      {/* Random country button */}
       <button
         onClick={handleRandom}
         aria-label="Select a random country"
         title="Random country"
         disabled={countries.length === 0}
-        className="group flex items-center justify-center w-10 h-10 rounded-xl border border-ui-border bg-ui-surface text-ui-text-secondary shadow-card hover:bg-ui-accent hover:border-ui-accent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        className="group flex items-center justify-center shrink-0 w-10 h-10 rounded-xl border border-ui-border bg-ui-surface text-ui-text-secondary shadow-card hover:bg-ui-accent hover:border-ui-accent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <img
           src="/icons/dice_black.png"
@@ -120,7 +111,7 @@ export function SearchBar({ countries, filteredCountries }: SearchBarProps) {
           onClick={handleClear}
           aria-label="Deselect current country"
           title="Clear selection"
-          className="flex items-center justify-center w-10 h-10 rounded-xl border border-ui-border bg-ui-surface text-ui-text-secondary shadow-card hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600 dark:hover:text-red-400 hover:border-red-300 dark:hover:border-red-800 transition-all"
+          className="flex items-center justify-center shrink-0 w-10 h-10 rounded-xl border border-ui-border bg-ui-surface text-ui-text-secondary shadow-card hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600 dark:hover:text-red-400 hover:border-red-300 dark:hover:border-red-800 transition-all"
         >
           {/* X icon */}
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

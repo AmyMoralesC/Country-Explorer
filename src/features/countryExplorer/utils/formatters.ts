@@ -1,6 +1,4 @@
 /**
- * formatters.ts
- *
  * Pure utility functions for formatting display values.
  * Pure = no side effects, same input always produces same output.
  * Easy to unit-test without any React or DOM dependencies.

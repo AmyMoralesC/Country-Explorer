@@ -1,6 +1,6 @@
 /**
  * Tests for the filtering hook.
- * We test the LOGIC, not the React internals — so renderHook is enough.
+ * We test the logic, not the React internals — so renderHook is enough.
  * No DOM rendering needed here.
  */
 

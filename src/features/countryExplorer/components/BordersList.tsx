@@ -1,11 +1,7 @@
 "use client";
 
 /**
- * BordersList.tsx
- *
  * Shows the border countries of the selected country as small square
- * cards (flag on top, country code below) — matching the original
- * wireframe's "cuadritos" layout.
  * - Starts collapsed at MAX_VISIBLE (4) borders.
  * - A "+n more" card expands to show the rest; "Show less" collapses again.
  * - Clicking a border card selects that country.

@@ -1,7 +1,6 @@
 "use client";
 
 /**
- * ZoomControls.tsx
  * Floating zoom/reset/pan controls overlay for the WorldMap.
  */
 
@@ -18,21 +17,21 @@ export function ZoomControls({ zoom, onZoomIn, onZoomOut, onReset }: ZoomControl
       <button
         onClick={onZoomIn}
         aria-label="Zoom in"
-        className="flex items-center justify-center w-8 h-8 rounded-lg bg-ui-surface/90 border border-ui-border text-ui-text-primary shadow-card hover:bg-ui-surface transition-colors text-lg font-light"
+        className="flex items-center justify-center w-10 h-10 md:w-8 md:h-8 rounded-lg bg-ui-surface/90 border border-ui-border text-ui-text-primary shadow-card hover:bg-ui-surface transition-colors text-lg font-light"
       >
         +
       </button>
       <button
         onClick={onReset}
         aria-label="Reset zoom and pan"
-        className="flex items-center justify-center w-8 h-8 rounded-lg bg-ui-surface/90 border border-ui-border text-ui-text-muted shadow-card hover:bg-ui-surface transition-colors text-xs"
+        className="flex items-center justify-center w-10 h-10 md:w-8 md:h-8 rounded-lg bg-ui-surface/90 border border-ui-border text-ui-text-muted shadow-card hover:bg-ui-surface transition-colors text-xs"
       >
         ↺
       </button>
       <button
         onClick={onZoomOut}
         aria-label="Zoom out"
-        className="flex items-center justify-center w-8 h-8 rounded-lg bg-ui-surface/90 border border-ui-border text-ui-text-primary shadow-card hover:bg-ui-surface transition-colors text-lg font-light"
+        className="flex items-center justify-center w-10 h-10 md:w-8 md:h-8 rounded-lg bg-ui-surface/90 border border-ui-border text-ui-text-primary shadow-card hover:bg-ui-surface transition-colors text-lg font-light"
       >
         −
       </button>

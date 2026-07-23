@@ -4,16 +4,6 @@
  * Tests for the info panel component.
  * We test what the USER sees, not implementation details.
  * Guiding question: "If I render this component, does it show the right info?"
- *
- * CountryCard renders <CountryImage>, which calls useCountryImage — a
- * TanStack Query hook that fetches a Wikipedia photo. We mock that hook
- * directly (not just the underlying fetch) so these tests:
- *   1. Never make a real network call.
- *   2. Render synchronously with the flag fallback already in place —
- *      no need to await a loading state that has nothing to do with what
- *      this test file is actually verifying.
- * Wikipedia's own fetch/scoring logic is exercised separately wherever
- * the API route itself is tested, not here.
  */
 
 import { describe, it, expect, vi } from "vitest";

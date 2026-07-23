@@ -3,12 +3,6 @@
 @tailwind utilities;
 
 /**
- * Design tokens as CSS custom properties, stored as RGB channel triplets
- * (e.g. "59 130 246", not "#3B82F6"). This is Tailwind's documented pattern
- * for making a color themeable AND keeping opacity modifiers working
- * (bg-ui-accent/10, border-ui-border/50, etc.) — see tailwind.config.ts,
- * where each color resolves to rgb(var(--color-x) / <alpha-value>).
- *
  * Switching themes is just toggling the .dark class on <html> — every
  * component that uses these Tailwind color names (ui-bg, map-ocean, etc.)
  * repaints automatically, with zero component-level dark: variants needed.

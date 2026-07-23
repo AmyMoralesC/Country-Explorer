@@ -1,8 +1,6 @@
 "use client";
 
 /**
- * CountryCard.tsx
- *
  * The info panel's content for the currently selected country.
  * Pure composition — each visual block lives in its own component:
  *   CountryImage  → Wikipedia hero photo (flag fallback)
@@ -11,10 +9,6 @@
  *                    demonym / population (icon + label + value rows)
  *   StatBox       → currency, GINI, coordinates, area (2x2 grid)
  *   BordersList   → neighboring countries as small cards
- *
- * No rounded corners or shadow at the root — the parent <aside> in
- * CountryExplorer is the flush-edged container now; this component just
- * fills it.
  */
 
 import type { Country } from "../types/country.types";

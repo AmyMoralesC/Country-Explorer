@@ -24,9 +24,6 @@ export const metadata: Metadata = {
  * flash for anyone with dark mode saved. Running this script BEFORE the
  * body paints, directly in <head>, avoids that entirely: by the time the
  * browser draws anything, the correct class is already on <html>.
- *
- * dangerouslySetInnerHTML is the standard, safe way to inject a static,
- * hardcoded script like this in Next.js — there's no user input involved.
  */
 const THEME_INIT_SCRIPT = `
   (function () {

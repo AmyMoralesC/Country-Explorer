@@ -1,9 +1,5 @@
 /**
- * EmptyState.tsx
- *
  * Displayed in the info panel when no country has been selected yet.
- * No border/rounded corners here — the panel itself is the flush-edged
- * container now, so this just centers its content within it.
  */
 
 export function EmptyState() {
