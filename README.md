@@ -1,3 +1,4 @@
+
 # Country Explorer
 
 An interactive world map for exploring detailed information about every country — built as a TypeScript portfolio project focused on strict type safety, clean architecture, and real-world data-fetching patterns.
