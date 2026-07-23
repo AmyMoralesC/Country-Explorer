@@ -12,7 +12,7 @@
  * All rendering logic lives in child components.
  */
 
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useCountries } from "../hooks/useCountries";
 import { useCountryFilter } from "../hooks/useCountryFilter";
 import { useCountryStore } from "../store/countryStore";
@@ -33,13 +33,13 @@ export function CountryExplorer() {
 
   const filteredCountries = useCountryFilter({ countries, query: searchQuery });
 
-  const handleCountrySelect = (country: Country) => {
+  const handleCountrySelect = useCallback((country: Country) => {
     setSelectedCountry(country);
-  };
+  }, [setSelectedCountry]);
 
   // Keep the selection in sync with the search: if the person types a query
   // that no longer includes the currently selected country, clear the
-  // selection. If the selected country IS still among the matches, we leave it selected
+  // selection.
   useEffect(() => {
     if (!selectedCountry) return;
     if (searchQuery.trim().length === 0) return;
@@ -59,7 +59,6 @@ export function CountryExplorer() {
           <h1 className="text-base font-bold text-ui-text-primary tracking-tight truncate">
             Country Explorer
           </h1>
-          {/* Hidden on very small screens */}
           <span className="hidden sm:inline text-xs text-ui-text-muted font-normal ml-1 shrink-0">
             — Demo
           </span>
@@ -68,7 +67,7 @@ export function CountryExplorer() {
       </header>
 
       {/* ── Main content ────────────────────────────────────────── */}
-      <main className="flex flex-col md:flex-row flex-1 min-h-0 overflow-y-auto md:overflow-hidden">
+      <main className="flex flex-col md:flex-row flex-1 min-h-0 overflow-y-auto overscroll-contain md:overflow-hidden">
         {/* Map column */}
         <div className="flex flex-col shrink-0 md:flex-1 md:min-w-0 md:min-h-0 gap-3 p-4">
           {isLoading ? (
@@ -77,7 +76,7 @@ export function CountryExplorer() {
             <SearchBar countries={countries} filteredCountries={filteredCountries} />
           )}
 
-          <div className="h-[50vh] md:h-auto md:flex-1 md:min-h-0">
+          <div className="aspect-[1000/550] w-full md:aspect-auto md:h-auto md:flex-1 md:min-h-0">
             {isLoading && <MapSkeleton />}
             {isError && <MapError />}
             {!isLoading && !isError && (
@@ -94,7 +93,7 @@ export function CountryExplorer() {
 
         {/* Info panel */}
         <aside
-          className={`w-full ${PANEL_WIDTH_CLASS} md:shrink-0 md:h-full border-t md:border-t-0 md:border-l border-ui-border bg-ui-surface md:overflow-y-auto`}
+          className={`flex-1 md:flex-none w-full ${PANEL_WIDTH_CLASS} md:shrink-0 md:h-full border-t md:border-t-0 md:border-l border-ui-border bg-ui-surface md:overflow-y-auto`}
         >
           {selectedCountry ? (
             <CountryCard

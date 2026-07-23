@@ -3,16 +3,18 @@
 /**
  * Renders an interactive SVG world map from GeoJSON path data.
  * All pan/zoom/gesture logic (mouse drag, wheel zoom, touch pan, pinch
- * zoom) lives in useMapInteraction — this component only wires that state
- * up to the actual <svg>/<path> markup.
+ * zoom) lives in useMapInteraction — this component wires that state up
+ * to the markup, and precomputes each country's <path> "d" string once
+ * (see pathData below) so pan/zoom updates don't recompute geometry.
  */
 
 import { useRef, useState, useCallback, useEffect, useMemo } from "react";
-import type { Country, GeoJsonData, GeoJsonFeature } from "../types/country.types";
+import type { Country, GeoJsonData } from "../types/country.types";
 import { geometryToPath, MAP_WIDTH, MAP_HEIGHT } from "../utils/projection";
 import { useMapInteraction } from "../hooks/useMapInteraction";
 import { ZoomControls } from "./ZoomControls";
 import { MapGridLines } from "./MapGridLines";
+import { CountryPath } from "./CountryPath";
 
 interface WorldMapProps {
   /** Full country list — used to resolve a clicked path to a Country. */
@@ -55,8 +57,18 @@ export function WorldMap({
       .catch((err) => console.error("Failed to load GeoJSON:", err));
   }, []);
 
-  const handleCountryClick = useCallback((feature: GeoJsonFeature) => {
-    const admCode = feature.properties.ADM0_A3 as string;
+  // Precompute each country's "d" path string ONCE, when geoData loads —
+  // not on every pan/zoom re-render.
+  const pathData = useMemo(() => {
+    if (!geoData) return [];
+    return geoData.features.map((feature) => ({
+      admCode: feature.properties.ADM0_A3 as string,
+      name: feature.properties.NAME,
+      d: geometryToPath(feature.geometry),
+    }));
+  }, [geoData]);
+
+  const handleCountrySelect = useCallback((admCode: string) => {
     const country = countryByCca3.current.get(admCode);
     if (country) onCountryClick(country);
   }, [onCountryClick]);
@@ -67,6 +79,7 @@ export function WorldMap({
         ref={svgRef}
         viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
         className={`w-full h-full touch-none ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}
+        style={{ touchAction: "none" }}
         {...handlers}
         aria-label="Interactive world map"
         role="img"
@@ -74,42 +87,20 @@ export function WorldMap({
         <MapGridLines />
 
         <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
-          {geoData?.features.map((feature, index) => {
-            const admCode = feature.properties.ADM0_A3 as string;
+          {pathData.map(({ admCode, name, d }, index) => {
             const isSelected = selectedCountry?.cca3 === admCode;
-
-            const isDimmed =
-              isSearchActive && !visibleCca3Set.has(admCode) && !isSelected;
-
-            let fillClass = "fill-map-land stroke-map-border hover:fill-map-hover";
-            if (isSelected) {
-              fillClass = "fill-map-selected stroke-red-700";
-            } else if (isDimmed) {
-              fillClass = "fill-map-dim stroke-map-dim-border";
-            }
+            const isDimmed = isSearchActive && !visibleCca3Set.has(admCode) && !isSelected;
 
             return (
-              <path
+              <CountryPath
                 key={`${admCode}-${index}`}
-                d={geometryToPath(feature.geometry)}
-                className={`
-                  outline-none transition-colors duration-150
-                  focus-visible:stroke-ui-accent
-                  ${fillClass}
-                `}
-                style={{ opacity: isDimmed ? 0.45 : 1 }}
-                strokeWidth={isSelected ? 1.5 / zoom : 0.5 / zoom}
-                // Dimmed countries are visually "blocked" and not clickable
-                onClick={isDimmed ? undefined : () => handleCountryClick(feature)}
-                aria-label={feature.properties.NAME}
-                aria-disabled={isDimmed}
-                role="button"
-                tabIndex={isDimmed ? -1 : 0}
-                onKeyDown={(e) => {
-                  if (!isDimmed && (e.key === "Enter" || e.key === " ")) {
-                    handleCountryClick(feature);
-                  }
-                }}
+                admCode={admCode}
+                d={d}
+                name={name}
+                isSelected={isSelected}
+                isDimmed={isDimmed}
+                zoom={zoom}
+                onSelect={handleCountrySelect}
               />
             );
           })}

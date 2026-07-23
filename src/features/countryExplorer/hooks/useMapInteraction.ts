@@ -42,16 +42,35 @@ export function useMapInteraction() {
     mode: null, startX: 0, startY: 0, panX: 0, panY: 0, startDistance: 0, startZoom: 1,
   });
 
-  // Always-fresh mirrors of the latest state.
+  // Always-fresh mirrors of the latest state, for the native touch
   const panRef = useRef(pan);
   const zoomRef = useRef(zoom);
   useEffect(() => { panRef.current = pan; }, [pan]);
   useEffect(() => { zoomRef.current = zoom; }, [zoom]);
 
-  // Both axes are clamped so the map can never be dragged past its own
-  // edges — like Google Maps' boundary behavior. At MIN_ZOOM the map exactly
-  // fills the viewport, so the allowed range collapses to zero and panning
-  // is blocked entirely in both directions, which is the "wall" effect.
+  // requestAnimationFrame batching.
+  const rafId = useRef<number | null>(null);
+  const pendingUpdate = useRef<{ x: number; y: number; zoom?: number } | null>(null);
+
+  const scheduleUpdate = useCallback((next: { x: number; y: number; zoom?: number }) => {
+    pendingUpdate.current = next;
+    if (rafId.current !== null) return; // a frame is already scheduled
+
+    rafId.current = requestAnimationFrame(() => {
+      rafId.current = null;
+      const update = pendingUpdate.current;
+      if (!update) return;
+      if (update.zoom !== undefined) setZoom(update.zoom);
+      setPan({ x: update.x, y: update.y });
+    });
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (rafId.current !== null) cancelAnimationFrame(rafId.current);
+    };
+  }, []);
+
   const clampPan = useCallback((x: number, y: number, currentZoom: number) => {
     const minX = MAP_WIDTH - MAP_WIDTH * currentZoom;
     const maxX = 0;
@@ -63,8 +82,6 @@ export function useMapInteraction() {
     };
   }, []);
 
-  // Re-clamp whenever zoom changes (e.g. zooming out after having panned
-  // near an edge would otherwise leave pan outside the new bounds).
   useEffect(() => {
     setPan((prev) => clampPan(prev.x, prev.y, zoom));
   }, [zoom, clampPan]);
@@ -84,8 +101,9 @@ export function useMapInteraction() {
     if (!isDragging) return;
     const nextX = dragStart.current.panX + (e.clientX - dragStart.current.x);
     const nextY = dragStart.current.panY + (e.clientY - dragStart.current.y);
-    setPan(clampPan(nextX, nextY, zoom));
-  }, [isDragging, zoom, clampPan]);
+    const clamped = clampPan(nextX, nextY, zoom);
+    scheduleUpdate(clamped);
+  }, [isDragging, zoom, clampPan, scheduleUpdate]);
 
   const handleMouseUp = useCallback(() => setIsDragging(false), []);
 
@@ -125,16 +143,17 @@ export function useMapInteraction() {
 
     function onTouchMove(e: TouchEvent) {
       const gesture = touchGesture.current;
+      if (gesture.mode === null) return;
+
+      e.preventDefault();
 
       if (gesture.mode === "pan" && e.touches.length === 1) {
-        e.preventDefault();
         const t = e.touches[0];
         if (!t) return;
         const nextX = gesture.panX + (t.clientX - gesture.startX);
         const nextY = gesture.panY + (t.clientY - gesture.startY);
-        setPan(clampPan(nextX, nextY, gesture.startZoom));
+        scheduleUpdate(clampPan(nextX, nextY, gesture.startZoom));
       } else if (gesture.mode === "pinch" && e.touches.length === 2) {
-        e.preventDefault();
         const [a, b] = [e.touches[0], e.touches[1]];
         if (!a || !b) return;
 
@@ -146,15 +165,12 @@ export function useMapInteraction() {
         const nextX = gesture.panX + (mid.x - gesture.startX);
         const nextY = gesture.panY + (mid.y - gesture.startY);
 
-        setZoom(nextZoom);
-        setPan(clampPan(nextX, nextY, nextZoom));
+        const clamped = clampPan(nextX, nextY, nextZoom);
+        scheduleUpdate({ ...clamped, zoom: nextZoom });
       }
     }
 
     function onTouchEnd(e: TouchEvent) {
-      // Going from 2 fingers to 1 (instead of releasing entirely) re-arms
-      // pan mode from the current position, so the gesture continues
-      // smoothly instead of just stopping.
       if (e.touches.length === 1) {
         const t = e.touches[0];
         if (!t) return;
@@ -183,7 +199,7 @@ export function useMapInteraction() {
       svgEl.removeEventListener("touchend", onTouchEnd);
       svgEl.removeEventListener("touchcancel", onTouchEnd);
     };
-  }, [clampPan]);
+  }, [clampPan, scheduleUpdate]);
 
   // ── Button controls (ZoomControls) ─────────────────────────────────
   const zoomIn = useCallback(() => setZoom((z) => Math.min(MAX_ZOOM, z + 0.5)), []);
@@ -201,7 +217,7 @@ export function useMapInteraction() {
     zoomIn,
     zoomOut,
     reset,
-    // Mouse handlers only now
+    // Mouse handlers only.
     handlers: {
       onWheel: handleWheel,
       onMouseDown: handleMouseDown,
