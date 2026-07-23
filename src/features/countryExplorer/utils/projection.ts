@@ -5,16 +5,6 @@
  * it maps longitude linearly to X and latitude linearly to Y.
  * It distorts area near the poles, but it matches the Natural Earth GeoJSON
  * dataset we're using, so paths and country dots align correctly.
- *
- * Vertical layout: Antarctica's coastline reaches the true South Pole
- * (latitude -90), so a plain linear mapping puts it flush against the
- * bottom edge automatically — which is what we want. The northernmost
- * landmass (Greenland, ~83.6°N) falls well short of the North Pole (90°N),
- * so the same linear mapping leaves only a sliver of ocean at the top
- * (about 3.5% of the map height), which reads as "cramped" rather than
- * as deliberate framing. TOP_PADDING adds a fixed band of extra canvas
- * height above the projection, giving the Arctic some breathing room
- * without touching the equirectangular math or shifting Antarctica.
  */
 
 export const MAP_WIDTH = 1000;

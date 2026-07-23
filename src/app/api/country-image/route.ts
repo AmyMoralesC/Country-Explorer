@@ -10,33 +10,6 @@ import {
  *
  * Fetches a real landscape/city photo for a country from Wikipedia.
  *
- * PERFORMANCE — three changes from the earlier version, in order of impact:
- *
- * 1. ONE network round-trip instead of two. The original version did
- *    action=query&prop=images (get file titles) → THEN a second, separate
- *    action=query&prop=imageinfo (get URLs/descriptions for those titles).
- *    MediaWiki supports chaining this with `generator=images`, which
- *    returns image titles AND their imageinfo in a single response. This
- *    is the single biggest latency win — half the network round trips.
- *
- * 2. Smaller payload. `extmetadata` returns ~20 fields per image (license,
- *    author, credit, categories...) by default. We only ever read
- *    ImageDescription, so `iiextmetadatafilter=ImageDescription` tells
- *    Wikipedia to skip building/sending the rest — less JSON to transfer
- *    and parse.
- *
- * 3. In-memory server-side cache. A person reloading the page loses the
- *    client-side TanStack Query cache (it lives in browser memory, wiped
- *    on refresh), which was forcing a fresh Wikipedia round-trip every
- *    single reload — the actual source of "tengo que recargar varias
- *    veces". This module-level Map survives across requests on the same
- *    server process, so the second time anyone asks for e.g. "Costa Rica"
- *    the answer comes back immediately with no Wikipedia call at all.
- *    Note: this cache resets on server restart / redeploy, and won't be
- *    shared across multiple server instances in a serverless deployment —
- *    for a portfolio demo running on one Node process, that's a fine
- *    trade-off for the simplicity it buys.
- *
  * The scoring logic itself (reject on NEGATIVE_KEYWORDS, rank by
  * POSITIVE_KEYWORDS) is unchanged — see constants.ts.
  */

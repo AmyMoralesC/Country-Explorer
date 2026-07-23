@@ -1,9 +1,6 @@
 /**
- * InfoRow.tsx
- *
  * A simple icon + label + value display row.
  * Extracted to avoid repeating the same div/span structure 6+ times
- * in CountryCard — DRY principle in action.
  *
  * `icon` is an icon NAME (e.g. "government"), not a file path — ThemedIcon
  * resolves it to the correct black/white PNG for the active theme.

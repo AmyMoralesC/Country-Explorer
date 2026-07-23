@@ -1,6 +1,4 @@
 /**
- * restCountries.service.test.ts
- *
  * Tests for the adapter that maps raw REST Countries v5 API data →
  * internal Country model. We mock fetch() so we never make real network
  * calls in tests.

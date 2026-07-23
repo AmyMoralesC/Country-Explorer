@@ -1,20 +1,12 @@
 "use client";
 
 /**
- * SearchBar.tsx
- *
  * Search input + Random button + Clear selection button.
  *
  * Controlled search input connected to Zustand store.
  * - Typing filters the map in real time (grays out non-matches).
- * - Enter key still works but isn't required (UX improvement).
  * - The "Random" button selects a random country from the full list.
  * - The "Clear" button deselects the currently selected country.
- *
- * Accessibility:
- * - Input has an associated <label> (visually hidden via sr-only).
- * - Both action buttons have aria-labels describing their purpose.
- * - Search icon is decorative (aria-hidden).
  */
 
 import type { Country } from "../types/country.types";
@@ -93,8 +85,7 @@ export function SearchBar({ countries, filteredCountries }: SearchBarProps) {
         )}
       </div>
 
-      {/* Random country button — dice icon: black in light+idle, white
-          whenever hovering OR in dark mode (both put it on a dark bg) */}
+      {/* Random country button */}
       <button
         onClick={handleRandom}
         aria-label="Select a random country"

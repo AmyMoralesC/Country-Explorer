@@ -1,6 +1,4 @@
 /**
- * BordersList.test.tsx
- *
  * Tests for the collapsible borders component.
  */
 

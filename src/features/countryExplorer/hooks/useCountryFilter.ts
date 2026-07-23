@@ -1,12 +1,6 @@
 /**
- *
  * Encapsulates search filtering logic.
- *
- * Why a custom hook instead of inline useMemo in the component?
- * - The component stays focused on rendering, not business logic.
- * - The filter logic is independently testable (see __tests__).
- * - If we add more filter criteria later, this is the only file to touch.
- *
+ * 
  * Matching rules (deliberately narrow):
  * - Country name: substring match (e.g. "co" matches "Mexico", "Colombia").
  * - Country code: exact match only, for 2-3 letter codes (e.g. "cr" → Costa Rica).

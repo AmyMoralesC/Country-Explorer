@@ -1,41 +1,9 @@
 /**
- * useMapInteraction.ts
- *
  * All pan/zoom state and gesture handling for the world map, in one place:
  *   - Mouse: click-drag to pan, wheel to zoom.
  *   - Touch: one-finger drag to pan, two-finger pinch to zoom (with the
  *     pinch midpoint also panning, so it feels like a normal map app
  *     rather than a fixed-center zoom).
- *
- * Extracted out of WorldMap.tsx so that component stays focused on
- * rendering — this hook owns the "how do gestures translate into pan/zoom
- * numbers" logic, which is substantial enough to deserve its own file.
- *
- * TOUCH ARCHITECTURE — all native, none of it via JSX props:
- * touchstart/touchmove/touchend are ALL attached with a single native,
- * non-passive addEventListener call, rather than splitting them between
- * React's synthetic event system (for start/end) and a raw listener
- * (for move). Two reasons:
- *
- *   1. preventDefault(): since React 17, JSX touch handlers are registered
- *      passively at the root for scroll performance, which silently blocks
- *      e.preventDefault() (with just a console warning) — needed here to
- *      stop the page from scrolling while a finger pans/pinches the map.
- *
- *   2. Timing: React's synthetic events are dispatched through React's own
- *      batching/delegation system, while a manually-attached native
- *      listener fires immediately. Splitting the SAME gesture across both
- *      systems (synthetic touchstart + native touchmove) risks a native
- *      touchmove arriving before the synthetic touchstart has actually run
- *      — which would silently drop the very first bit of movement, since
- *      our touchmove handler only acts once gesture.mode has been set.
- *      That reads exactly like "dragging doesn't work" to a person even
- *      though later moves in the same gesture might have. Handling the
- *      whole gesture in one native system removes this race entirely.
- *
- * panRef/zoomRef mirror the latest React state so the native listeners
- * (attached once, on mount) always read current values instead of a
- * stale closure from whenever the effect first ran.
  */
 
 import { useRef, useState, useCallback, useEffect } from "react";
@@ -74,8 +42,7 @@ export function useMapInteraction() {
     mode: null, startX: 0, startY: 0, panX: 0, panY: 0, startDistance: 0, startZoom: 1,
   });
 
-  // Always-fresh mirrors of the latest state, for the native touch
-  // listeners below (attached once on mount — see the file header).
+  // Always-fresh mirrors of the latest state.
   const panRef = useRef(pan);
   const zoomRef = useRef(zoom);
   useEffect(() => { panRef.current = pan; }, [pan]);
@@ -234,8 +201,7 @@ export function useMapInteraction() {
     zoomIn,
     zoomOut,
     reset,
-    // Mouse handlers only now — touch is fully native (see effect above),
-    // so it's intentionally NOT part of this spread-onto-JSX object.
+    // Mouse handlers only now
     handlers: {
       onWheel: handleWheel,
       onMouseDown: handleMouseDown,
