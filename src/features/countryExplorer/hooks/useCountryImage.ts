@@ -1,6 +1,4 @@
 /**
- * useCountryImage.ts
- *
  * Wraps TanStack Query around fetchCountryImage. Each country name gets
  * its own cache entry, so switching between previously-viewed countries
  * is instant (no refetch) — same caching benefit useCountries gets for

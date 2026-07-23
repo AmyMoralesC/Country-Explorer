@@ -1,22 +1,5 @@
 /**
- * useCountries.ts
- *
  * Wraps TanStack Query to fetch and cache all countries.
- *
- * Why TanStack Query instead of useEffect + useState?
- * The anti-pattern looks like this:
- *   const [data, setData] = useState(null);
- *   const [loading, setLoading] = useState(false);
- *   useEffect(() => { fetch(...).then(setData) }, []);
- *
- * Problems with that approach:
- *   - No caching (refetches on every mount).
- *   - No deduplication (two components fetching = two network calls).
- *   - Manual loading/error state = boilerplate.
- *   - Race conditions on fast re-mounts.
- *
- * TanStack Query solves all of this: one fetch, shared cache, automatic
- * background refetch, and typed loading/error states.
  */
 
 import { useQuery } from "@tanstack/react-query";

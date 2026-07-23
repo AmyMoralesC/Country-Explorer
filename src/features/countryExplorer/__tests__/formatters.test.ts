@@ -1,6 +1,4 @@
 /**
- * formatters.test.ts
- *
  * Pure function tests — the easiest kind to write.
  * No React, no DOM, no mocks needed.
  * Each function gets: happy path, edge case, boundary value.

@@ -1,7 +1,6 @@
 "use client";
 
 /**
- * ZoomControls.tsx
  * Floating zoom/reset/pan controls overlay for the WorldMap.
  */
 

@@ -1,35 +1,5 @@
 "use client";
 
-/**
- * ThemeProvider.tsx
- *
- * Holds the app's light/dark theme state and applies it by toggling the
- * `.dark` class on <html> — every color in tailwind.config.ts is wired to
- * a CSS variable that changes based on that class (see globals.css), so
- * this provider's only real job is deciding which class should be there
- * and persisting the choice.
- *
- * Persistence: localStorage, under "country-explorer-theme". This is a
- * real deployed app (not a Claude artifact), so localStorage is the
- * correct, standard tool here — it survives reloads and new tabs.
- *
- * HYDRATION SAFETY — why `theme` always starts as "light":
- * The server has no access to localStorage, so it always renders as if
- * the theme were "light". If our React state started by reading the DOM
- * (which the inline anti-flash script in layout.tsx may have already
- * flipped to dark before hydration), the client's first render would
- * differ from the server's — that's exactly what caused the earlier
- * hydration error ("Expected server HTML to contain a matching <circle>").
- *
- * The fix (the same technique next-themes uses): keep the first client
- * render IDENTICAL to the server's ("light"), then correct it inside
- * useEffect — which only ever runs in the browser, after hydration has
- * already succeeded, so React never compares mismatched output. The
- * `mounted` flag lets consumers (like DarkModeToggle) avoid rendering
- * anything theme-dependent until that correction has happened, so there's
- * no visible icon flash either.
- */
-
 import { createContext, useContext, useEffect, useState } from "react";
 
 type Theme = "light" | "dark";

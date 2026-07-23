@@ -1,14 +1,8 @@
 /**
- * ThemedIcon.tsx
- *
  * Renders the black or white variant of an icon from /public/icons
  * depending on the active theme — purely via CSS (dark:hidden /
  * dark:block), no JS theme reads needed here. Both images sit in the DOM;
  * only one is ever visible, and the switch is instant when .dark toggles.
- *
- * Usage: <ThemedIcon name="government" className="w-4 h-4" />
- *   → renders /icons/government_black.png (light) or
- *              /icons/government_white.png (dark)
  */
 
 interface ThemedIconProps {

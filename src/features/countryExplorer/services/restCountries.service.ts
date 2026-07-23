@@ -1,5 +1,4 @@
 /**
- * restCountries.service.ts
  * API client for REST Countries v5
  */
 

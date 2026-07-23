@@ -1,6 +1,4 @@
 /**
- * fixtures.ts
- *
  * Shared mock data for tests.
  * Centralizing fixtures means: change one Country shape → fix one file,
  * not every test file individually.

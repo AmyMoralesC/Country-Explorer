@@ -1,5 +1,4 @@
 /**
- * MapGridLines.tsx
  * Decorative latitude/longitude reference grid for the SVG map.
  * Uses the map-border token (at low opacity) instead of a fixed hex color
  * so the grid stays subtle and correctly-toned in both light and dark mode.

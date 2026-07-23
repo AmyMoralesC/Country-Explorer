@@ -1,6 +1,4 @@
 /**
- * CountryHeader.tsx
- *
  * The identity block at the top of the info panel's content: flag, common
  * name, official name, region/subregion, and the country code badge in
  * the top-right corner. Extracted from CountryCard so that component
